@@ -1,0 +1,79 @@
+#!/bin/bash
+
+declare list_file_name
+
+steam_menu() {
+    declare -A id
+
+    for manifest in $HOME/.steam/steam/steamapps/appmanifest_*; do
+        name=$(cat $manifest | grep "name")
+        if [[ ! $name =~ .*(Proton|Steamworks Common Redistributables).* ]]; then
+            name="$(echo $name | cut -d' ' -f2- | sed -e 's/^"//' -e 's/"$//')"
+            titles+=("$name")
+
+            appid=$(cat $manifest | grep "\"appid\"")
+            appid=$(echo $appid | cut -d' ' -f2-)
+            id["$name"]=$(echo $appid | sed -e 's/^"//' -e 's/"$//')
+        fi
+    done
+
+    IFS=$'\n' titles=($(sort <<< "${titles[*]}")); unset IFS
+
+    game=$(printf '%s\n' "${titles[@]}" | dmenu -i "$@")
+
+    [[ -n $game ]] || exit
+
+    steam steam://rungameid/${id[$game]}
+}
+
+menu_template() {
+    separatorStr='COMMAND'
+    i=0
+    declare -A commands
+    while read line; do
+        if [[ ${line:0:1} != '#' ]]; then
+            titles[$i]="$(echo -e "${line%$separatorStr*}" | sed -e 's/[[:space:]]*$//')"
+            commands["${titles[$i]}"]="${line#*$separatorStr}"
+            ((i++))
+        fi
+    done < "$HOME/games/lists/$list_file_name.list"
+
+    game=$(printf '%s\n' "${titles[@]}" | dmenu -i "$@")
+
+    [[ -n $game ]] || exit
+
+    bash -c "${commands[$game]}"
+}
+
+gaming_apps() {
+    # TODO
+    app=$(printf '%s\n' "${app_name[@]}" | dmenu -i "$@")
+}
+
+menus+=("DOS games")
+# menus+=("Gaming apps")
+menus+=("Regular games")
+menus+=("Steam games")
+
+option=$(printf '%s\n' "${menus[@]}" | dmenu -i "$@")
+
+[[ -n $option ]] || exit
+
+case $option in
+    "DOS games")
+        list_file_name="dos"
+        menu_template
+        ;;
+    # "Gaming apps")
+    #     gaming_apps
+    #     ;;
+    "Regular games")
+        list_file_name="regular"
+        menu_template
+        ;;
+    "Steam games")
+        steam_menu
+        ;;
+    *)
+        ;;
+esac
