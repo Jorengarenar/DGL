@@ -1,0 +1,5 @@
+[Desktop Entry]
+Type=Application
+Name=Game Launcher
+Exec=game_launcher
+StartupNotify=false

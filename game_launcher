@@ -1,6 +1,7 @@
 #!/bin/bash
 
 declare list_file_name
+declare list_dir_path="$HOME/games/lists"
 
 steam_menu() {
     declare -A id
@@ -27,7 +28,7 @@ steam_menu() {
 }
 
 menu_template() {
-    separatorStr='COMMAND'
+    separatorStr='SEPARATOR'
     i=0
     declare -A commands
     while read line; do
@@ -36,7 +37,7 @@ menu_template() {
             commands["${titles[$i]}"]="${line#*$separatorStr}"
             ((i++))
         fi
-    done < "$HOME/games/lists/$list_file_name.list"
+    done < "$list_dir_path/$list_file_name.list"
 
     game=$(printf '%s\n' "${titles[@]}" | dmenu -i "$@")
 
