@@ -1,7 +1,7 @@
 PREFIX=/usr
 BINDIR=$(PREFIX)/bin
 APPLICATIONS=$(PREFIX)/share/applications
-PROGNAME=game_launcher
+PROGNAME=dmenu-game-launcher
 
 all:
 	@echo "Run 'make install' for installation."

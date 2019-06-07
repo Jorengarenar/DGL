@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Game Launcher for dmenu
+Exec=dmenu-game-launcher
+Terminal=false
+Type=Application
+Categories=Game;
+Keywords=Games
+StartupNotify=false
