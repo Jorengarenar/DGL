@@ -32,11 +32,11 @@ steam_menu() {
 menu_template() {
     separatorStr='SEPARATOR'
     i=0
-    declare -A commands
+    declare -A commands_and_files
     while read line; do
         if [[ ${line:0:1} != '#' ]]; then
             titles[$i]="$(echo -e "${line%$separatorStr*}" | sed -e 's/[[:space:]]*$//')"
-            commands["${titles[$i]}"]="${line#*$separatorStr}"
+            commands_and_files["${titles[$i]}"]="${line#*$separatorStr}"
             ((i++))
         fi
     done < "$list_dir_path/$list_file_name.list"
@@ -45,24 +45,19 @@ menu_template() {
 
     [[ -n $game ]] || exit
 
-    game_file_path="${commands[$game]}"
+    file_or_cmd="${commands_and_files[$game]}"
 
     if [[ $list_file_name == "dos" ]]; then
-        sh -c "dosbox -exit $game_file_path"
+        sh -c "dosbox -exit $file_or_cmd"
     elif [[ $list_file_name == "wine" ]]; then
-        sh -c "cd $(dirname $game_file_path) && wine $(basename $game_file_path)"
+        sh -c "cd $(dirname $file_or_cmd) && wine $(basename $file_or_cmd)"
     else
-        sh -c "$game_file_path"
+        sh -c "$file_or_cmd"
     fi
 }
 
-gaming_apps() {
-    # TODO
-    app=$(printf '%s\n' "${app_name[@]}" | dmenu -i "$@")
-}
-
 menus+=("DOS games")
-# menus+=("Gaming apps")
+menus+=("Gaming apps")
 menus+=("Regular games")
 menus+=("Steam games")
 menus+=("Wine games")
@@ -76,9 +71,10 @@ case $option in
         list_file_name="dos"
         menu_template
         ;;
-    # "Gaming apps")
-        #     gaming_apps
-        #     ;;
+    "Gaming apps")
+        list_file_name="gaming_apps"
+        menu_template
+        ;;
     "Regular games")
         list_file_name="regular"
         menu_template
