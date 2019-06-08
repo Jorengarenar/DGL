@@ -45,13 +45,14 @@ menu_template() {
 
     [[ -n $game ]] || exit
 
+    game_file_path="${commands[$game]}"
+
     if [[ $list_file_name == "dos" ]]; then
-        sh -c "dosbox -exit ${commands[$game]}"
+        sh -c "dosbox -exit $game_file_path"
     elif [[ $list_file_name == "wine" ]]; then
-        game_file_path="${commands[$game]}"
         sh -c "cd $(dirname $game_file_path) && wine $(basename $game_file_path)"
     else
-        sh -c "${commands[$game]}"
+        sh -c "$game_file_path"
     fi
 }
 
