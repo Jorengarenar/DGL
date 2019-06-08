@@ -1,7 +1,9 @@
 #!/bin/bash
 
+VERSION=0.0.4
+
 declare list_file_name
-declare list_dir_path="$HOME/games/lists"
+declare list_dir_path="$HOME/.dmenu-game-launcher"
 
 steam_menu() {
     declare -A id
@@ -43,7 +45,14 @@ menu_template() {
 
     [[ -n $game ]] || exit
 
-    bash -c "${commands[$game]}"
+    if [[ $list_file_name == "dos" ]]; then
+        sh -c "dosbox -exit ${commands[$game]}"
+    elif [[ $list_file_name == "wine" ]]; then
+        game_file_path="${commands[$game]}"
+        sh -c "cd $(dirname $game_file_path) && wine $(basename $game_file_path)"
+    else
+        sh -c "${commands[$game]}"
+    fi
 }
 
 gaming_apps() {
@@ -55,6 +64,7 @@ menus+=("DOS games")
 # menus+=("Gaming apps")
 menus+=("Regular games")
 menus+=("Steam games")
+menus+=("Wine games")
 
 option=$(printf '%s\n' "${menus[@]}" | dmenu -i "$@")
 
@@ -66,14 +76,18 @@ case $option in
         menu_template
         ;;
     # "Gaming apps")
-    #     gaming_apps
-    #     ;;
+        #     gaming_apps
+        #     ;;
     "Regular games")
         list_file_name="regular"
         menu_template
         ;;
     "Steam games")
         steam_menu
+        ;;
+    "Wine games")
+        list_file_name="wine"
+        menu_template
         ;;
     *)
         ;;
