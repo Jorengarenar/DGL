@@ -5,6 +5,12 @@ VERSION=0.0.4
 declare list_file_name
 declare list_dir_path="$HOME/.dmenu-game-launcher"
 
+mkdir -p $list_dir_path
+touch $list_dir_path/dos.list
+touch $list_dir_path/gaming_apps.list
+touch $list_dir_path/regular.list
+touch $list_dir_path/wine.list
+
 steam_menu() {
     declare -A id
 
