@@ -2,11 +2,19 @@
 # -*- coding: UTF-8 -*-
 
 import glob
+import readline
 import json
 import os
 import re
 
 from optparse import OptionParser
+
+def rlinput(prompt, prefill=''):
+   readline.set_startup_hook(lambda: readline.insert_text(prefill))
+   try:
+       return input(prompt)  # or raw_input in Python 2
+   finally:
+       readline.set_startup_hook()
 
 parser = OptionParser()
 parser.add_option("-e", "--edit-json",
@@ -37,33 +45,50 @@ if options.edit:
 
         title = input("Title: ")
         type = input("Type: ")
-        executive = input("Path: ")
+        if type == "dos" or type == "wine":
+            executive = input("Path: ")
+        else:
+            executive = input("Command: ")
 
         new_data = [
                 {
-                  "title": title,
-                  "type": type,
-                  "executive": executive
-                }
-              ]
+                    "title" : title,
+                    "type" : type,
+                    "executive" : executive
+                    }
+                ]
 
         data += new_data
 
         with open(games_json_file_path, 'w') as games_json_file:
             games_json_file.write( json.dumps(data, indent=4, separators=(',', ': ')))
 
-    elif option == 3:
-        for i in range(len(data)):
-            print("[", i+1, "] ", data[i]["title"], sep="")
+    elif option == 2:
+        if len(data) == 0:
+            print("Nothing to edit")
+        else:
+            for i in range(len(data)):
+                print("[", i+1, "] ", data[i]["title"], sep="")
+            to_edit = int(input("Edit: ")) - 1
 
+        rlinput("Title: ", data[to_edit]["title"])
+        rlinput("Type:  ", data[to_edit]["type"])
+        rlinput("Command/path: ", data[to_edit]["executive"])
+
+    elif option == 3:
         if len(data) == 0:
             print("Nothing to delete")
         else:
-            to_delete = int(input("Delete: "))
-            data.pop(to_delete - 1)
+            for i in range(len(data)):
+                print("[", i+1, "] ", data[i]["title"], sep="")
+
+            to_delete = int(input("Delete: ")) - 1
+            data.pop(to_delete)
 
             with open(games_json_file_path, 'w') as games_json_file:
                 games_json_file.write( json.dumps(data, indent=4, separators=(',', ': ')))
+    else:
+        print("No such action")
 
 else:
 
