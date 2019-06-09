@@ -25,11 +25,14 @@ manifests = glob.glob(os.environ["HOME"] + "/.steam/steam/steamapps/appmanifest_
 
 steam_name_pattern = r"\s*\"name\"\s*\"(.+)\""
 steam_appid_pattern = r"\s*\"appid\"\s*\"(\d+)\""
+steam_exclude_pattern = r".*(Proton|Steamworks Common Redistributables).*"
 
 for manifest_path in manifests:
     with open(manifest_path) as manifest_file:
         manifest = manifest_file.read()
         name = re.findall(steam_name_pattern, manifest)[0]
+        if re.search(steam_exclude_pattern, name):
+            continue
         titles.append(name)
         appid[i] = re.findall(steam_appid_pattern, manifest)[0]
         id_table[name] = i
