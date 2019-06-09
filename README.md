@@ -2,6 +2,7 @@
 
 Use *dmenu* to launch your games
 
+<!--
 There are 5 menus:
   * DOS games
   * Gaming apps
@@ -57,3 +58,4 @@ HoMM3 HD Launcher SEPARATOR cd $HOME/games/GOG_win/HoMM_3_Complete && wine ./HD_
 itch.io           SEPARATOR $HOME/.itch/itch
 Lutris            SEPARATOR lutris
 ```
+-->

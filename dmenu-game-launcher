@@ -1,95 +1,33 @@
-#!/bin/bash
+#!/usr/bin/env python3
+# -*- coding: UTF-8 -*-
 
-declare list_file_name
-declare list_dir_path="$HOME/.dmenu-game-launcher"
+import json
+import os
 
-mkdir -p $list_dir_path
-touch $list_dir_path/dos.list
-touch $list_dir_path/gaming_apps.list
-touch $list_dir_path/regular.list
-touch $list_dir_path/wine.list
+with open(os.environ['HOME'] + "/.config/dmenu-game-launcher/games.json") as file:
+    data = json.load(file)
 
-steam_menu() {
-    declare -A id
+i = 0
+counter = {}
+titles = []
+for x in data:
+    titles.append(x["title"])
+    counter[x["title"]] = i
+    i += 1
 
-    for manifest in $HOME/.steam/steam/steamapps/appmanifest_*; do
-        name=$(cat $manifest | grep "name")
-        if [[ ! $name =~ .*(Proton|Steamworks Common Redistributables).* ]]; then
-            name="$(echo $name | cut -d' ' -f2- | sed -e 's/^"//' -e 's/"$//')"
-            titles+=("$name")
+cmd = "echo \"" + "\n".join(sorted(titles)) + "\" | dmenu -i"
 
-            appid=$(cat $manifest | grep "\"appid\"")
-            appid=$(echo $appid | cut -d' ' -f2-)
-            id["$name"]=$(echo $appid | sed -e 's/^"//' -e 's/"$//')
-        fi
-    done
+option = os.popen(cmd).read()[:-1]
 
-    IFS=$'\n' titles=($(sort <<< "${titles[*]}")); unset IFS
+field = counter[option]
 
-    game=$(printf '%s\n' "${titles[@]}" | dmenu -i "$@")
+executive = data[field]["executive"]
 
-    [[ -n $game ]] || exit
+type = data[field]["type"]
 
-    steam steam://rungameid/${id[$game]}
-}
+if type == "dos":
+    cmd = "dosbox -exit " + executive
+elif type == "wine":
+    cmd = "cd " + os.path.dirname(executive) + " && wine " + os.path.basename(executive)
 
-menu_template() {
-    separatorStr='SEPARATOR'
-    i=0
-    declare -A commands_and_files
-    while read line; do
-        if [[ ${line:0:1} != '#' ]]; then
-            titles[$i]="$(echo -e "${line%$separatorStr*}" | sed -e 's/[[:space:]]*$//')"
-            commands_and_files["${titles[$i]}"]="${line#*$separatorStr}"
-            ((i++))
-        fi
-    done < "$list_dir_path/$list_file_name.list"
-
-    game=$(printf '%s\n' "${titles[@]}" | dmenu -i "$@")
-
-    [[ -n $game ]] || exit
-
-    file_or_cmd="${commands_and_files[$game]}"
-
-    if [[ $list_file_name == "dos" ]]; then
-        sh -c "dosbox -exit $file_or_cmd"
-    elif [[ $list_file_name == "wine" ]]; then
-        sh -c "cd $(dirname $file_or_cmd) && wine $(basename $file_or_cmd)"
-    else
-        sh -c "$file_or_cmd"
-    fi
-}
-
-menus+=("DOS games")
-menus+=("Gaming apps")
-menus+=("Regular games")
-menus+=("Steam games")
-menus+=("Wine games")
-
-option=$(printf '%s\n' "${menus[@]}" | dmenu -i "$@")
-
-[[ -n $option ]] || exit
-
-case $option in
-    "DOS games")
-        list_file_name="dos"
-        menu_template
-        ;;
-    "Gaming apps")
-        list_file_name="gaming_apps"
-        menu_template
-        ;;
-    "Regular games")
-        list_file_name="regular"
-        menu_template
-        ;;
-    "Steam games")
-        steam_menu
-        ;;
-    "Wine games")
-        list_file_name="wine"
-        menu_template
-        ;;
-    *)
-        ;;
-esac
+os.system(cmd)
