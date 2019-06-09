@@ -162,6 +162,8 @@ else:
         cmd = "dosbox -exit " + executive
     elif type == "wine":
         cmd = "cd " + os.path.dirname(executive) + " && wine " + os.path.basename(executive)
+    elif type == "regular":
+        cmd = executive
     elif type == "desktop":
         cmd = executables[id_table[selection]]
     elif type == "steam":
