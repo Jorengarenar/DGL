@@ -12,7 +12,7 @@ from optparse import OptionParser
 def rlinput(prompt, prefill=''):
    readline.set_startup_hook(lambda: readline.insert_text(prefill))
    try:
-       return input(prompt)  # or raw_input in Python 2
+       return input(prompt)
    finally:
        readline.set_startup_hook()
 
@@ -25,13 +25,18 @@ parser.add_option("-e", "--edit-json",
 
 games_json_file_path = os.environ["HOME"] + "/.config/dmenu-game-launcher/games.json"
 
-if os.stat(games_json_file_path).st_size == 0:
+os.makedirs(os.path.dirname(games_json_file_path), exist_ok=True)
+
+if not os.path.isfile(games_json_file_path):
     with open(games_json_file_path, "w") as games_json_file:
         games_json_file.write("[]")
+else:
+    if os.stat(games_json_file_path).st_size == 0:
+        with open(games_json_file_path, "w") as games_json_file:
+            games_json_file.write("[]")
 
 with open(games_json_file_path) as games_json_file:
     data = json.load(games_json_file)
-
 
 if options.edit:
     print("What do you want to do?")
