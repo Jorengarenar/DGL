@@ -80,6 +80,9 @@ if options.edit:
         rlinput("Type:  ", data[to_edit]["type"])
         rlinput("Command/path: ", data[to_edit]["executive"])
 
+        with open(games_json_file_path, 'w') as games_json_file:
+            games_json_file.write( json.dumps(data, indent=4, separators=(',', ': ')))
+
     elif option == 3:
         if len(data) == 0:
             print("Nothing to delete")
