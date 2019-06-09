@@ -1,33 +1,57 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
+import glob
 import json
 import os
+import re
 
-with open(os.environ['HOME'] + "/.config/dmenu-game-launcher/games.json") as file:
+with open(os.environ["HOME"] + "/.config/dmenu-game-launcher/games.json") as file:
     data = json.load(file)
 
 i = 0
-counter = {}
+id_table = {}
 titles = []
 for x in data:
     titles.append(x["title"])
-    counter[x["title"]] = i
+    id_table[x["title"]] = i
     i += 1
 
-cmd = "echo \"" + "\n".join(sorted(titles)) + "\" | dmenu -i"
+first_steam_id = i
 
-option = os.popen(cmd).read()[:-1]
+appid = {}
 
-field = counter[option]
+manifests = glob.glob(os.environ["HOME"] + "/.steam/steam/steamapps/appmanifest_*")
 
-executive = data[field]["executive"]
+steam_name_pattern = r"\s*\"name\"\s*\"(.+)\""
+steam_appid_pattern = r"\s*\"appid\"\s*\"(\d+)\""
 
-type = data[field]["type"]
+for manifest_path in manifests:
+    with open(manifest_path) as manifest_file:
+        manifest = manifest_file.read()
+        name = re.findall(steam_name_pattern, manifest)[0]
+        titles.append(name)
+        appid[i] = re.findall(steam_appid_pattern, manifest)[0]
+        id_table[name] = i
+        i += 1
+
+dmenu = "echo \"" + "\n".join(sorted(titles)) + "\" | dmenu -i"
+
+option = os.popen(dmenu).read()[:-1]
+
+id = id_table[option]
+
+if id < first_steam_id:
+    executive = data[id]["executive"]
+    type = data[id]["type"]
+else:
+    type = "steam"
 
 if type == "dos":
     cmd = "dosbox -exit " + executive
 elif type == "wine":
     cmd = "cd " + os.path.dirname(executive) + " && wine " + os.path.basename(executive)
+elif type == "steam":
+    cmd = "steam steam://rungameid/" + appid[id_table[option]]
 
 os.system(cmd)
