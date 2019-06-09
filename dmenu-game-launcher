@@ -17,6 +17,24 @@ for x in data:
     id_table[x["title"]] = i
     i += 1
 
+first_desktop_id = i
+
+executables = {}
+
+desktops = glob.glob(os.environ["HOME"] + "/.config/dmenu-game-launcher/desktops/*.desktop")
+
+desktop_name_pattern = r"Name=(.*)"
+desktop_exec_pattern = r"Exec=(.*)"
+
+for desktop_path in desktops:
+    with open(desktop_path) as desktop_file:
+        desktop = desktop_file.read()
+        name = re.findall(desktop_name_pattern, desktop)[0]
+        titles.append(name)
+        executables[i] = re.findall(desktop_exec_pattern, desktop)[0]
+        id_table[name] = i
+        i += 1
+
 first_steam_id = i
 
 appid = {}
@@ -44,9 +62,11 @@ option = os.popen(dmenu).read()[:-1]
 
 id = id_table[option]
 
-if id < first_steam_id:
+if id < first_desktop_id:
     executive = data[id]["executive"]
     type = data[id]["type"]
+elif id < first_steam_id:
+    type = "desktop"
 else:
     type = "steam"
 
@@ -54,6 +74,8 @@ if type == "dos":
     cmd = "dosbox -exit " + executive
 elif type == "wine":
     cmd = "cd " + os.path.dirname(executive) + " && wine " + os.path.basename(executive)
+elif type == "desktop":
+    cmd = executables[id_table[option]]
 elif type == "steam":
     cmd = "steam steam://rungameid/" + appid[id_table[option]]
 
