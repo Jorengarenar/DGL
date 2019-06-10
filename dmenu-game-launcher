@@ -9,12 +9,20 @@ import readline
 
 from optparse import OptionParser
 
+def complete(text, state):
+    return (glob.glob(text+'*')+[None])[state]
+
+readline.set_completer_delims(' \t\n;')
+readline.parse_and_bind("tab: complete")
+readline.set_completer(complete)
+
+
 def rlinput(prompt, prefill=''):
-   readline.set_startup_hook(lambda: readline.insert_text(prefill))
-   try:
-       return input(prompt)
-   finally:
-       readline.set_startup_hook()
+    readline.set_startup_hook(lambda: readline.insert_text(prefill))
+    try:
+        return input(prompt)
+    finally:
+        readline.set_startup_hook()
 
 parser = OptionParser()
 parser.add_option("-e", "--edit-json",
