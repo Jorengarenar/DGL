@@ -2,10 +2,10 @@
 # -*- coding: UTF-8 -*-
 
 import glob
-import readline
 import json
 import os
 import re
+import readline
 
 from optparse import OptionParser
 
