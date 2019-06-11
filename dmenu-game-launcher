@@ -46,6 +46,16 @@ else:
 with open(games_json_file_path) as games_json_file:
     data = json.load(games_json_file)
 
+i = 0
+id_table = {}
+titles = []
+for x in data:
+    titles.append(x["title"])
+    id_table[x["title"]] = i
+    i += 1
+
+titles = sorted(titles)
+
 if options.edit:
     print("What do you want to do?")
     print("[1] Add new entry")
@@ -57,6 +67,9 @@ if options.edit:
     if option == 1:
 
         title = input("Title: ")
+        while(title in titles):
+            print("Entry with that title already exist!")
+            title = input("Title: ")
         type = input("Type: ")
         if type == "dos" or type == "wine":
             executive = input("Path: ")
@@ -80,26 +93,32 @@ if options.edit:
         if len(data) == 0:
             print("Nothing to edit")
         else:
-            for i in range(len(data)):
-                print("[", i+1, "] ", data[i]["title"], sep="")
-            to_edit = int(input("Edit: ")) - 1
+            for j in range(len(titles)):
+                print("[", j+1, "] ", titles[j], sep="")
 
-        data[to_edit]["title"] = rlinput("Title: ", data[to_edit]["title"])
-        data[to_edit]["type"] = rlinput("Type:  ", data[to_edit]["type"])
-        data[to_edit]["executive"] = rlinput("Command/path: ", data[to_edit]["executive"])
+            to_edit_id_temp = int(input("Edit: ")) - 1
+            to_edit_title = titles[to_edit_id_temp]
+            to_edit_id = id_table[to_edit_title]
 
-        with open(games_json_file_path, 'w') as games_json_file:
-            games_json_file.write( json.dumps(data, indent=4, separators=(',', ': ')))
+            data[to_edit_id]["title"] = rlinput("Title: ", data[to_edit]["title"])
+            data[to_edit_id]["type"] = rlinput("Type:  ", data[to_edit]["type"])
+            data[to_edit_id]["executive"] = rlinput("Command/path: ", data[to_edit]["executive"])
+
+            with open(games_json_file_path, 'w') as games_json_file:
+                games_json_file.write( json.dumps(data, indent=4, separators=(',', ': ')))
 
     elif option == 3:
         if len(data) == 0:
             print("Nothing to delete")
         else:
-            for i in range(len(data)):
-                print("[", i+1, "] ", data[i]["title"], sep="")
+            for j in range(len(titles)):
+                print("[", j+1, "] ", titles[j], sep="")
 
-            to_delete = int(input("Delete: ")) - 1
-            data.pop(to_delete)
+            to_delete_id_temp = int(input("Delete: ")) - 1
+            to_delete_title = titles[to_delete_id_temp]
+            to_delete_id = id_table[to_delete_title]
+
+            data.pop(to_delete_id)
 
             with open(games_json_file_path, 'w') as games_json_file:
                 games_json_file.write( json.dumps(data, indent=4, separators=(',', ': ')))
@@ -107,14 +126,6 @@ if options.edit:
         print("No such action")
 
 else:
-
-    i = 0
-    id_table = {}
-    titles = []
-    for x in data:
-        titles.append(x["title"])
-        id_table[x["title"]] = i
-        i += 1
 
     first_desktop_id = i
 
