@@ -7,16 +7,23 @@ import os
 import re
 import readline
 
+# Command line options
 from optparse import OptionParser
+parser = OptionParser()
+parser.add_option("-e", "--edit-json",
+        action="store_true", dest="edit", default=False,
+        help="Edit JSON file")
+(options, args) = parser.parse_args()
 
+# Path completion (could be better)
 def complete(text, state):
     return (glob.glob(text+'*')+[None])[state]
-
 readline.set_completer_delims(' \t\n;')
 readline.parse_and_bind("tab: complete")
 readline.set_completer(complete)
 
 
+# Already filled input to edit
 def rlinput(prompt, prefill=''):
     readline.set_startup_hook(lambda: readline.insert_text(prefill))
     try:
@@ -24,17 +31,23 @@ def rlinput(prompt, prefill=''):
     finally:
         readline.set_startup_hook()
 
-parser = OptionParser()
-parser.add_option("-e", "--edit-json",
-        action="store_true", dest="edit", default=False,
-        help="Edit JSON file")
+# Function to getting ID to edit or delete
+def get_id_for_editing(titles, id_table):
+    for j in range(len(titles)):
+        print("[", j+1, "] ", titles[j], sep="")
 
-(options, args) = parser.parse_args()
+    to_edit_id_temp = int(input("Edit: ")) - 1
+    to_edit_title = titles[to_edit_id_temp]
+    to_edit_id = id_table[to_edit_title]
+    return to_edit_id
 
+# Path to games.json file with list of titles. types and their file pathes / commands
 games_json_file_path = os.environ["HOME"] + "/.config/dmenu-game-launcher/games.json"
 
+# Create directory from 'games_json_file_path' if not exists
 os.makedirs(os.path.dirname(games_json_file_path), exist_ok=True)
 
+# Inicialize file 'games.json'
 if not os.path.isfile(games_json_file_path):
     with open(games_json_file_path, "w") as games_json_file:
         games_json_file.write("[]")
@@ -43,9 +56,11 @@ else:
         with open(games_json_file_path, "w") as games_json_file:
             games_json_file.write("[]")
 
+# Load data from 'games.json'
 with open(games_json_file_path) as games_json_file:
     data = json.load(games_json_file)
 
+# Create table with game titles and their "JSON ID"
 i = 0
 id_table = {}
 titles = []
@@ -54,15 +69,17 @@ for x in data:
     id_table[x["title"]] = i
     i += 1
 
-titles = sorted(titles)
+# Sort titles list
+titles = sorted(titles, key=str.lower)
 
 if options.edit:
     print("What do you want to do?")
     print("[1] Add new entry")
     print("[2] Edit existing entry")
     print("[3] Delete entry")
+    print("[4] List titles")
 
-    option = int(input("Action [1-3]: "))
+    option = int(input("Action [1-4]: "))
 
     if option == 1:
 
@@ -93,16 +110,11 @@ if options.edit:
         if len(data) == 0:
             print("Nothing to edit")
         else:
-            for j in range(len(titles)):
-                print("[", j+1, "] ", titles[j], sep="")
+            to_edit_id = get_id_for_editing(titles, id_table)
 
-            to_edit_id_temp = int(input("Edit: ")) - 1
-            to_edit_title = titles[to_edit_id_temp]
-            to_edit_id = id_table[to_edit_title]
-
-            data[to_edit_id]["title"] = rlinput("Title: ", data[to_edit]["title"])
-            data[to_edit_id]["type"] = rlinput("Type:  ", data[to_edit]["type"])
-            data[to_edit_id]["executive"] = rlinput("Command/path: ", data[to_edit]["executive"])
+            data[to_edit_id]["title"] = rlinput("Title: ", data[to_edit_id]["title"])
+            data[to_edit_id]["type"] = rlinput("Type:  ", data[to_edit_id]["type"])
+            data[to_edit_id]["executive"] = rlinput("Command/path: ", data[to_edit_id]["executive"])
 
             with open(games_json_file_path, 'w') as games_json_file:
                 games_json_file.write( json.dumps(data, indent=4, separators=(',', ': ')))
@@ -122,6 +134,9 @@ if options.edit:
 
             with open(games_json_file_path, 'w') as games_json_file:
                 games_json_file.write( json.dumps(data, indent=4, separators=(',', ': ')))
+    elif option == 4:
+        for x in titles:
+            print(x)
     else:
         print("No such action")
 
@@ -129,13 +144,17 @@ else:
 
     first_desktop_id = i
 
+    # List for commands from .desktop files
     executables = {}
 
+    # List of .desktop files
     desktops = glob.glob(os.environ["HOME"] + "/.config/dmenu-game-launcher/desktops/*.desktop")
 
+    # .desktop RegEx patterns
     desktop_name_pattern = r"Name=(.*)"
     desktop_exec_pattern = r"Exec=(.*)"
 
+    # Check .desktop files
     for desktop_path in desktops:
         with open(desktop_path) as desktop_file:
             desktop = desktop_file.read()
@@ -147,14 +166,18 @@ else:
 
     first_steam_id = i
 
+    # List for Steam appids
     appid = {}
 
+    # List of Steam applications' manifest files
     manifests = glob.glob(os.environ["HOME"] + "/.steam/steam/steamapps/appmanifest_*")
 
+    # Steam RegEx patterns
     steam_name_pattern = r"\s*\"name\"\s*\"(.+)\""
     steam_appid_pattern = r"\s*\"appid\"\s*\"(\d+)\""
     steam_exclude_pattern = r".*(Proton|Steamworks Common Redistributables).*"
 
+    # Check for installed Steam applications
     for manifest_path in manifests:
         with open(manifest_path) as manifest_file:
             manifest = manifest_file.read()
@@ -166,12 +189,16 @@ else:
             id_table[name] = i
             i += 1
 
+    # Dmenu command
     dmenu = "echo \"" + "\n".join(sorted(titles)) + "\" | dmenu -i"
 
+    # Run dmenu and take from it game title
     selection = os.popen(dmenu).read()[:-1]
 
+    # Get game ID based on game title
     id = id_table[selection]
 
+    # Define type of game based of its ID
     if id < first_desktop_id:
         executive = data[id]["executive"]
         type = data[id]["type"]
@@ -180,6 +207,7 @@ else:
     else:
         type = "steam"
 
+    # Define command to run based on type
     if type == "dos":
         cmd = "dosbox -exit " + executive
     elif type == "wine":
@@ -191,4 +219,5 @@ else:
     elif type == "steam":
         cmd = "steam steam://rungameid/" + appid[id_table[selection]]
 
+    # Run game
     os.system(cmd)
