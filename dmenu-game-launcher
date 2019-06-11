@@ -38,8 +38,7 @@ def get_id_for_editing(titles, id_table):
 
     to_edit_id_temp = int(input("Edit: ")) - 1
     to_edit_title = titles[to_edit_id_temp]
-    to_edit_id = id_table[to_edit_title]
-    return to_edit_id
+    return id_table[to_edit_title]
 
 # Path to games.json file with list of titles. types and their file pathes / commands
 games_json_file_path = os.environ["HOME"] + "/.config/dmenu-game-launcher/games.json"
@@ -159,10 +158,11 @@ else:
         with open(desktop_path) as desktop_file:
             desktop = desktop_file.read()
             name = re.findall(desktop_name_pattern, desktop)[0]
-            titles.append(name)
-            executables[i] = re.findall(desktop_exec_pattern, desktop)[0]
-            id_table[name] = i
-            i += 1
+            if not name in titles: # JSON takes priority over .desktop and Steam
+                titles.append(name)
+                executables[i] = re.findall(desktop_exec_pattern, desktop)[0]
+                id_table[name] = i
+                i += 1
 
     first_steam_id = i
 
@@ -182,12 +182,13 @@ else:
         with open(manifest_path) as manifest_file:
             manifest = manifest_file.read()
             name = re.findall(steam_name_pattern, manifest)[0]
-            if re.search(steam_exclude_pattern, name):
-                continue
-            titles.append(name)
-            appid[i] = re.findall(steam_appid_pattern, manifest)[0]
-            id_table[name] = i
-            i += 1
+            if not name in titles: # JSON and .desktop takes priority over Steam
+                if re.search(steam_exclude_pattern, name):
+                    continue
+                titles.append(name)
+                appid[i] = re.findall(steam_appid_pattern, manifest)[0]
+                id_table[name] = i
+                i += 1
 
     # Dmenu command
     dmenu = "echo \"" + "\n".join(sorted(titles)) + "\" | dmenu -i"
