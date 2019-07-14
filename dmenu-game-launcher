@@ -41,7 +41,10 @@ def get_id_for_editing(titles, id_table):
     return id_table[to_edit_title]
 
 # Path to games.json file with list of titles. types and their file pathes / commands
-games_json_file_path = os.environ["HOME"] + "/.config/dmenu-game-launcher/games.json"
+if "XDG_CONFIG_HOME" in os.environ:
+    games_json_file_path = os.environ["XDG_CONFIG_HOME"] + "/dmenu-game-launcher/games.json"
+else:
+    games_json_file_path = os.environ["HOME"] + "/.config/dmenu-game-launcher/games.json"
 
 # Create directory from 'games_json_file_path' if not exists
 os.makedirs(os.path.dirname(games_json_file_path), exist_ok=True)
