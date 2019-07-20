@@ -7,7 +7,7 @@ import os
 import re
 import readline
 
-version="0.8.2"
+version="0.8.3"
 
 # Command line options
 from optparse import OptionParser
@@ -43,10 +43,10 @@ def get_id_for_editing(titles, id_table):
     return id_table[to_edit_title]
 
 # Path to games.json file with list of titles. types and their file pathes / commands
-if "XDG_CONFIG_HOME" in os.environ:
-    games_json_file_path = os.environ["XDG_CONFIG_HOME"] + "/dmenu-game-launcher/games.json"
+if "XDG_DATA_HOME" in os.environ:
+    games_json_file_path = os.environ["XDG_DATA_HOME"] + "/dgl/games.json"
 else:
-    games_json_file_path = os.environ["HOME"] + "/.config/dmenu-game-launcher/games.json"
+    games_json_file_path = os.environ["HOME"] + "/.local/share/dgl/games.json"
 
 # Create directory from 'games_json_file_path' if not exists
 os.makedirs(os.path.dirname(games_json_file_path), exist_ok=True)
@@ -152,7 +152,10 @@ else:
     executables = {}
 
     # List of .desktop files
-    desktops = glob.glob(os.environ["HOME"] + "/.config/dmenu-game-launcher/desktops/*.desktop")
+    if "XDG_DATA_HOME" in os.environ:
+        desktops = os.environ["XDG_DATA_HOME"] + "/.local/share/dgl/desktops/*.desktop"
+    else:
+        desktops = glob.glob(os.environ["HOME"] + "/.local/share/dgl/desktops/*.desktop")
 
     # .desktop RegEx patterns
     desktop_name_pattern = r"Name=(.*)"
