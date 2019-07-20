@@ -1,4 +1,4 @@
-# Dmenu Game Launcher
+# DGL - Dmenu Game Launcher
 
 Use *dmenu* to launch your games
 
