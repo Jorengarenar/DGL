@@ -7,6 +7,8 @@ import os
 import re
 import readline
 
+version="0.8.2"
+
 # Command line options
 from optparse import OptionParser
 parser = OptionParser()
@@ -200,9 +202,12 @@ else:
     selection = os.popen(dmenu).read()[:-1]
 
     # Get game ID based on game title
-    id = id_table[selection]
+    try:
+        id = id_table[selection]
+    except KeyError:
+        exit()
 
-    # Define type of game based of its ID
+        # Define type of game based of its ID
     if id < first_desktop_id:
         executive = data[id]["executive"]
         type = data[id]["type"]
