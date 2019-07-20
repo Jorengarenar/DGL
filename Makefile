@@ -1,7 +1,7 @@
 PREFIX=/usr
 BINDIR=$(PREFIX)/bin
 APPLICATIONS=$(PREFIX)/share/applications
-PROGNAME=dmenu-game-launcher
+PROGNAME=dgl
 
 install:
 	install -Dm755 $(PROGNAME) $(BINDIR)/$(PROGNAME)
