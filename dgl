@@ -7,7 +7,7 @@ import os
 import re
 import readline
 
-version="0.8.4"
+version="0.8.5"
 
 # Command line options
 from optparse import OptionParser
@@ -153,9 +153,11 @@ else:
 
     # List of .desktop files
     if "XDG_DATA_HOME" in os.environ:
-        desktops = os.environ["XDG_DATA_HOME"] + "/dgl/desktops/*.desktop"
+        desktops = glob.glob(os.environ["XDG_DATA_HOME"] + "/dgl/desktops/*.desktop")
     else:
         desktops = glob.glob(os.environ["HOME"] + "/.local/share/dgl/desktops/*.desktop")
+
+    print(desktops)
 
     # .desktop RegEx patterns
     desktop_name_pattern = r"Name=(.*)"
