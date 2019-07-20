@@ -7,7 +7,7 @@ import os
 import re
 import readline
 
-version="0.8.5"
+version="0.8.7"
 
 # Command line options
 from optparse import OptionParser
@@ -77,73 +77,93 @@ for x in data:
 titles = sorted(titles, key=str.lower)
 
 if options.edit:
-    print("What do you want to do?")
-    print("[1] Add new entry")
-    print("[2] Edit existing entry")
-    print("[3] Delete entry")
-    print("[4] List titles")
+    try:
+        print("What do you want to do?")
+        print("[1] Add new entry")
+        print("[2] Edit existing entry")
+        print("[3] Delete entry")
+        print("[4] List titles")
 
-    option = int(input("Action [1-4]: "))
+        option = int(input("Action [1-4]: "))
 
-    if option == 1:
+        if option == 1:
 
-        title = input("Title: ")
-        while(title in titles):
-            print("Entry with that title already exist!")
             title = input("Title: ")
-        type = input("Type: ")
-        if type == "dos" or type == "wine":
-            executive = input("Path: ")
-        else:
-            executive = input("Command: ")
+            while not title:
+                print("Title cannot be empty!")
+                title = input("Title: ")
 
-        new_data = [
-                {
-                    "title" : title,
-                    "type" : type,
-                    "executive" : executive
-                    }
-                ]
+            while(title in titles):
+                print("Entry with that title already exist!")
+                title = input("Title: ")
 
-        data += new_data
+            type = input("Type: ")
 
-        with open(games_json_file_path, 'w') as games_json_file:
-            games_json_file.write( json.dumps(data, indent=4, separators=(',', ': ')))
+            while type not in ["wine", "dos", "regular"]:
+                print("Type must be wine, dos or regular!")
+                type = input("Type: ")
 
-    elif option == 2:
-        if len(data) == 0:
-            print("Nothing to edit")
-        else:
-            to_edit_id = get_id_for_editing(titles, id_table)
+            if type == "dos" or type == "wine":
+                executive = input("Path: ")
+                while not executive:
+                    print("Path cannot be empty!")
+                    executive = input("Path: ")
+            else:
+                executive = input("Command: ")
+                while not executive:
+                    print("Command cannot be empty!")
+                    executive = input("Path: ")
 
-            data[to_edit_id]["title"] = rlinput("Title: ", data[to_edit_id]["title"])
-            data[to_edit_id]["type"] = rlinput("Type:  ", data[to_edit_id]["type"])
-            data[to_edit_id]["executive"] = rlinput("Command/path: ", data[to_edit_id]["executive"])
+            new_data = [
+                    {
+                        "title" : title,
+                        "type" : type,
+                        "executive" : executive
+                        }
+                    ]
 
-            with open(games_json_file_path, 'w') as games_json_file:
-                games_json_file.write( json.dumps(data, indent=4, separators=(',', ': ')))
-
-    elif option == 3:
-        if len(data) == 0:
-            print("Nothing to delete")
-        else:
-            for j in range(len(titles)):
-                print("[", j+1, "] ", titles[j], sep="")
-
-            to_delete_id_temp = int(input("Delete: ")) - 1
-            to_delete_title = titles[to_delete_id_temp]
-            to_delete_id = id_table[to_delete_title]
-
-            data.pop(to_delete_id)
+            data += new_data
 
             with open(games_json_file_path, 'w') as games_json_file:
                 games_json_file.write( json.dumps(data, indent=4, separators=(',', ': ')))
-    elif option == 4:
-        for x in titles:
-            print(x)
-    else:
-        print("No such action")
 
+        elif option == 2:
+            if len(data) == 0:
+                print("Nothing to edit")
+            else:
+                to_edit_id = get_id_for_editing(titles, id_table)
+
+                data[to_edit_id]["title"] = rlinput("Title: ", data[to_edit_id]["title"])
+                data[to_edit_id]["type"] = rlinput("Type:  ", data[to_edit_id]["type"])
+                data[to_edit_id]["executive"] = rlinput("Command/path: ", data[to_edit_id]["executive"])
+
+                with open(games_json_file_path, 'w') as games_json_file:
+                    games_json_file.write( json.dumps(data, indent=4, separators=(',', ': ')))
+
+        elif option == 3:
+            if len(data) == 0:
+                print("Nothing to delete")
+            else:
+                for j in range(len(titles)):
+                    print("[", j+1, "] ", titles[j], sep="")
+
+                to_delete_id_temp = int(input("Delete: ")) - 1
+                to_delete_title = titles[to_delete_id_temp]
+                to_delete_id = id_table[to_delete_title]
+
+                data.pop(to_delete_id)
+
+                with open(games_json_file_path, 'w') as games_json_file:
+                    games_json_file.write( json.dumps(data, indent=4, separators=(',', ': ')))
+        elif option == 4:
+            for x in titles:
+                print(x)
+        else:
+            print("No such action")
+
+    except KeyboardInterrupt:
+        print()
+        exit()
 else:
 
     first_desktop_id = i
