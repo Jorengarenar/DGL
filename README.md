@@ -6,13 +6,13 @@ Use **dmenu** to launch your games
 ## Installation
 To install use this command with root privileges:
 ```sh
-# make install
+$ make install
 ```
 
 ### Uninstalation
 To uninstall use this command with root privileges:
 ```sh
-# make uninstall
+$ make uninstall
 ```
 
 ### _Arch Linux_
