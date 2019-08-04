@@ -7,7 +7,7 @@ import os
 import re
 import readline
 
-version="0.8.7"
+version="0.8.8"
 
 # Command line options
 from optparse import OptionParser
@@ -200,7 +200,10 @@ else:
     appid = {}
 
     # List of Steam applications' manifest files
-    manifests = glob.glob(os.environ["HOME"] + "/.steam/steam/steamapps/appmanifest_*")
+    if "XDG_DATA_HOME" in os.environ:
+        manifests = glob.glob(os.environ["XDG_DATA_HOME"] + "/Steam/steamapps/appmanifest_*")
+    else:
+        manifests = glob.glob(os.environ["HOME"] + "/.local/share/Steam/steamapps/appmanifest_*")
 
     # Steam RegEx patterns
     steam_name_pattern = r"\s*\"name\"\s*\"(.+)\""
