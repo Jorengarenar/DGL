@@ -7,15 +7,22 @@ import os
 import re
 import readline
 
-version="0.8.8"
+__version__="0.8.9"
 
 # Command line options
 from optparse import OptionParser
 parser = OptionParser()
 parser.add_option("-e", "--edit-json",
         action="store_true", dest="edit", default=False,
-        help="Edit JSON file")
+        help="edit JSON file")
+parser.add_option("-v", "--version",
+        action="store_true", dest="version", default=False,
+        help="print version number")
 (options, args) = parser.parse_args()
+
+if options.version:
+    print(__version__)
+    exit()
 
 # Path completion (could be better)
 def complete(text, state):
@@ -33,7 +40,7 @@ def rlinput(prompt, prefill=''):
     finally:
         readline.set_startup_hook()
 
-# Function to getting ID to edit or delete
+# Function for getting ID to edit or delete
 def get_id_for_editing(titles, id_table):
     for j in range(len(titles)):
         print("[", j+1, "] ", titles[j], sep="")
@@ -176,8 +183,6 @@ else:
         desktops = glob.glob(os.environ["XDG_DATA_HOME"] + "/dgl/desktops/*.desktop")
     else:
         desktops = glob.glob(os.environ["HOME"] + "/.local/share/dgl/desktops/*.desktop")
-
-    print(desktops)
 
     # .desktop RegEx patterns
     desktop_name_pattern = r"Name=(.*)"
