@@ -1,23 +1,23 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
+from optparse import OptionParser
 import glob
 import json
 import os
 import re
 import readline
 
-__version__="0.8.9"
+__version__ = "0.8.9"
 
 # Command line options
-from optparse import OptionParser
 parser = OptionParser()
 parser.add_option("-e", "--edit-json",
-        action="store_true", dest="edit", default=False,
-        help="edit JSON file")
+                  action="store_true", dest="edit", default=False,
+                  help="edit JSON file")
 parser.add_option("-v", "--version",
-        action="store_true", dest="version", default=False,
-        help="print version number")
+                  action="store_true", dest="version", default=False,
+                  help="print version number")
 (options, args) = parser.parse_args()
 
 if options.version:
@@ -25,8 +25,12 @@ if options.version:
     exit()
 
 # Path completion (could be better)
+
+
 def complete(text, state):
     return (glob.glob(text+'*')+[None])[state]
+
+
 readline.set_completer_delims(' \t\n;')
 readline.parse_and_bind("tab: complete")
 readline.set_completer(complete)
@@ -41,6 +45,8 @@ def rlinput(prompt, prefill=''):
         readline.set_startup_hook()
 
 # Function for getting ID to edit or delete
+
+
 def get_id_for_editing(titles, id_table):
     for j in range(len(titles)):
         print("[", j+1, "] ", titles[j], sep="")
@@ -48,6 +54,7 @@ def get_id_for_editing(titles, id_table):
     to_edit_id_temp = int(input("Edit: ")) - 1
     to_edit_title = titles[to_edit_id_temp]
     return id_table[to_edit_title]
+
 
 # Path to games.json file with list of titles. types and their file pathes / commands
 if "XDG_DATA_HOME" in os.environ:
@@ -122,17 +129,18 @@ if options.edit:
                     executive = input("Path: ")
 
             new_data = [
-                    {
-                        "title" : title,
-                        "type" : type,
-                        "executive" : executive
-                        }
-                    ]
+                {
+                    "title": title,
+                    "type": type,
+                    "executive": executive
+                }
+            ]
 
             data += new_data
 
             with open(games_json_file_path, 'w') as games_json_file:
-                games_json_file.write( json.dumps(data, indent=4, separators=(',', ': ')))
+                games_json_file.write(json.dumps(
+                    data, indent=4, separators=(',', ': ')))
 
         elif option == 2:
             if len(data) == 0:
@@ -140,12 +148,16 @@ if options.edit:
             else:
                 to_edit_id = get_id_for_editing(titles, id_table)
 
-                data[to_edit_id]["title"] = rlinput("Title: ", data[to_edit_id]["title"])
-                data[to_edit_id]["type"] = rlinput("Type:  ", data[to_edit_id]["type"])
-                data[to_edit_id]["executive"] = rlinput("Command/path: ", data[to_edit_id]["executive"])
+                data[to_edit_id]["title"] = rlinput(
+                    "Title: ", data[to_edit_id]["title"])
+                data[to_edit_id]["type"] = rlinput(
+                    "Type:  ", data[to_edit_id]["type"])
+                data[to_edit_id]["executive"] = rlinput(
+                    "Command/path: ", data[to_edit_id]["executive"])
 
                 with open(games_json_file_path, 'w') as games_json_file:
-                    games_json_file.write( json.dumps(data, indent=4, separators=(',', ': ')))
+                    games_json_file.write(json.dumps(
+                        data, indent=4, separators=(',', ': ')))
 
         elif option == 3:
             if len(data) == 0:
@@ -161,7 +173,8 @@ if options.edit:
                 data.pop(to_delete_id)
 
                 with open(games_json_file_path, 'w') as games_json_file:
-                    games_json_file.write( json.dumps(data, indent=4, separators=(',', ': ')))
+                    games_json_file.write(json.dumps(
+                        data, indent=4, separators=(',', ': ')))
         elif option == 4:
             for x in titles:
                 print(x)
@@ -172,7 +185,6 @@ if options.edit:
         print()
         exit()
 else:
-
     first_desktop_id = i
 
     # List for commands from .desktop files
@@ -180,9 +192,11 @@ else:
 
     # List of .desktop files
     if "XDG_DATA_HOME" in os.environ:
-        desktops = glob.glob(os.environ["XDG_DATA_HOME"] + "/dgl/desktops/*.desktop")
+        desktops = glob.glob(
+            os.environ["XDG_DATA_HOME"] + "/dgl/desktops/*.desktop")
     else:
-        desktops = glob.glob(os.environ["HOME"] + "/.local/share/dgl/desktops/*.desktop")
+        desktops = glob.glob(
+            os.environ["HOME"] + "/.local/share/dgl/desktops/*.desktop")
 
     # .desktop RegEx patterns
     desktop_name_pattern = r"Name=(.*)"
@@ -193,7 +207,7 @@ else:
         with open(desktop_path) as desktop_file:
             desktop = desktop_file.read()
             name = re.findall(desktop_name_pattern, desktop)[0]
-            if not name in titles: # JSON takes priority over .desktop and Steam
+            if not name in titles:  # JSON takes priority over .desktop and Steam
                 titles.append(name)
                 executables[i] = re.findall(desktop_exec_pattern, desktop)[0]
                 id_table[name] = i
@@ -206,9 +220,11 @@ else:
 
     # List of Steam applications' manifest files
     if "XDG_DATA_HOME" in os.environ:
-        manifests = glob.glob(os.environ["XDG_DATA_HOME"] + "/Steam/steamapps/appmanifest_*")
+        manifests = glob.glob(
+            os.environ["XDG_DATA_HOME"] + "/Steam/steamapps/appmanifest_*")
     else:
-        manifests = glob.glob(os.environ["HOME"] + "/.local/share/Steam/steamapps/appmanifest_*")
+        manifests = glob.glob(
+            os.environ["HOME"] + "/.local/share/Steam/steamapps/appmanifest_*")
 
     # Steam RegEx patterns
     steam_name_pattern = r"\s*\"name\"\s*\"(.+)\""
@@ -220,7 +236,7 @@ else:
         with open(manifest_path) as manifest_file:
             manifest = manifest_file.read()
             name = re.findall(steam_name_pattern, manifest)[0]
-            if not name in titles: # JSON and .desktop takes priority over Steam
+            if not name in titles:  # JSON and .desktop takes priority over Steam
                 if re.search(steam_exclude_pattern, name):
                     continue
                 titles.append(name)
@@ -253,7 +269,8 @@ else:
     if type == "dos":
         cmd = "dosbox -exit " + executive
     elif type == "wine":
-        cmd = "cd " + os.path.dirname(executive) + " && wine " + os.path.basename(executive)
+        cmd = "cd " + os.path.dirname(executive) + \
+            " && wine " + os.path.basename(executive)
     elif type == "regular":
         cmd = executive
     elif type == "desktop":
